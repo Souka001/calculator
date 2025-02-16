@@ -1,36 +1,35 @@
-import { configureStore, createSlice } from '@reduxjs/toolkit';
+import { createStore } from "redux";
 
-const calculatorSlice = createSlice({
-    name: 'calculator',
-    initialState: { display: '0', expression: '' },
-    reducers: {
-        append: (state, action) => {
-            const value = action.payload;
+const initialState = { display: "0", prevResult: null };
 
-            // Si l'affichage est "0", remplacer directement sauf si l'entrée est "."
-            if (state.display === "0" && value !== ".") {
-                state.display = value;
-                state.expression = value;
-            } else {
-                state.display += value;
-                state.expression += value;
-            }
-        },
-        clear: (state) => {
-            state.expression = '';
-            state.display = '0';
-        },
-        evaluate: (state) => {
-            try {
-                state.display = eval(state.expression).toString();
-                state.expression = state.display;
-            } catch (error) {
-                state.display = 'Error';
-                state.expression = '';
-            }
-        }
-    }
-});
+const calculatorReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case "CLEAR":
+      return { ...state, display: "0", prevResult: null };
 
-export const { append, clear, evaluate } = calculatorSlice.actions;
-export const store = configureStore({ reducer: calculatorSlice.reducer });
+    case "APPEND":
+      if (state.prevResult) {
+        return { ...state, display: action.payload, prevResult: null };
+      }
+      if (state.display === "0" && /[0-9]/.test(action.payload)) {
+        return { ...state, display: action.payload };
+      }
+      if (action.payload === "." && state.display.includes(".")) return state;
+      if (["+", "-", "*", "/"].includes(action.payload) && ["+", "*", "/"].includes(state.display.slice(-1))) {
+        return { ...state, display: state.display.slice(0, -1) + action.payload };
+      }
+      return { ...state, display: state.display + action.payload };
+
+    case "EVALUATE":
+      try {
+        return { ...state, display: Function(`"use strict"; return (${state.display})`)().toString(), prevResult: state.display };
+      } catch {
+        return { ...state, display: "Error" };
+      }
+
+    default:
+      return state;
+  }
+};
+
+export const store = createStore(calculatorReducer);

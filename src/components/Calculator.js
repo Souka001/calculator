@@ -1,44 +1,84 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { append, clear, evaluate } from "../store";
+import { useSelector, useDispatch } from "react-redux";
 import "../styles.scss";
 
-const Calculator = () => {
-  const dispatch = useDispatch();
-  const display = useSelector((state) => state.display);
+const buttonIds = {
+  0: "zero",
+  1: "one",
+  2: "two",
+  3: "three",
+  4: "four",
+  5: "five",
+  6: "six",
+  7: "seven",
+  8: "eight",
+  9: "nine",
+  "+": "add",
+  "-": "subtract",
+  "*": "multiply",
+  "/": "divide",
+  "=": "equals",
+  ".": "decimal",
+  C: "clear",
+};
 
-  const handleClick = (value) => {
-    if (value === "=") dispatch(evaluate());
-    else if (value === "C") dispatch(clear());
-    else dispatch(append(value));
+const Calculator = () => {
+  const display = useSelector((state) => state.display);
+  const dispatch = useDispatch();
+
+  const handleClick = (btn) => {
+    if (btn === "C") dispatch({ type: "CLEAR" });
+    else if (btn === "=") dispatch({ type: "EVALUATE" });
+    else dispatch({ type: "APPEND", payload: btn });
   };
 
   return (
     <div className="calculator">
-      <div className="display" id="display">{display}</div>
+      <div className="display">{display}</div>
       <div className="buttons">
+       
         {[
-          "7", "8", "9", "/", 
-          "4", "5", "6", "*", 
-          "1", "2", "3", "-", 
-          "0", ".", "+", 
+          "7",
+          "8",
+          "9",
+          "/",
+          "4",
+          "5",
+          "6",
+          "*",
+          "1",
+          "2",
+          "3",
+          "-",
+          "0",
+          ".",
           "=",
-          "C"
+          "+",
         ].map((btn) => (
           <button
             key={btn}
-            onClick={() => handleClick(btn)}
+            id={buttonIds[btn]}
             className={
-              btn === "=" ? "equals" :
-              btn === "C" ? "clear" :
-              ["+", "-", "*", "/"].includes(btn) ? "operator" :
-              btn === "." ? "decimal" :
-              "number"
+              ["+", "-", "*", "/"].includes(btn)
+                ? "operator"
+                : btn === "="
+                ? "equals"
+                : ""
             }
+            onClick={() => handleClick(btn)}
           >
             {btn}
           </button>
+          
         ))}
+         <button
+          key="C"
+          id="clear"
+          className="clear"
+          onClick={() => handleClick("C")}
+        >
+          C
+        </button>
       </div>
     </div>
   );
